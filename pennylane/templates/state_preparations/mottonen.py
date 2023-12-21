@@ -123,7 +123,7 @@ def _apply_uniform_rotation_dagger(gate, alpha, control_wires, target_wire):
     gray_code_rank = len(control_wires)
 
     if gray_code_rank == 0:
-        if qml.math.is_abstract(theta) or qml.math.all(theta[..., 0] != 0.0):
+        if qml.math.is_abstract(theta) or qml.math.any(theta[..., 0] != 0.0):
             op_list.append(gate(theta[..., 0], wires=[target_wire]))
         return op_list
 
@@ -194,11 +194,13 @@ def _get_alpha_y(a, n, k):
         [(2 * (j + 1) - 1) * 2 ** (k - 1) + l for l in range(2 ** (k - 1))]
         for j in range(2 ** (n - k))
     ]
-    numerator = qml.math.take(a, indices=indices_numerator, axis=-1)
+
+    batch_axis = 1 if len(qml.math.shape(a)) > 1 else -1
+    numerator = qml.math.take(a, indices=indices_numerator, axis=batch_axis)
     numerator = qml.math.sum(qml.math.abs(numerator) ** 2, axis=-1)
 
     indices_denominator = [[j * 2**k + l for l in range(2**k)] for j in range(2 ** (n - k))]
-    denominator = qml.math.take(a, indices=indices_denominator, axis=-1)
+    denominator = qml.math.take(a, indices=indices_denominator, axis=batch_axis)
     denominator = qml.math.sum(qml.math.abs(denominator) ** 2, axis=-1)
 
     # Divide only where denominator is zero, else leave initial value of zero.
@@ -348,12 +350,12 @@ class MottonenStatePreparation(Operation):
         CNOT(wires=['a', 'b']),
         CNOT(wires=['a', 'b'])]
         """
-        if len(qml.math.shape(state_vector)) > 1:
-            raise ValueError(
-                "Broadcasting with MottonenStatePreparation is not supported. Please use the "
-                "qml.transforms.broadcast_expand transform to use broadcasting with "
-                "MottonenStatePreparation."
-            )
+        # if len(qml.math.shape(state_vector)) > 1:
+        #     raise ValueError(
+        #         "Broadcasting with MottonenStatePreparation is not supported. Please use the "
+        #         "qml.transforms.broadcast_expand transform to use broadcasting with "
+        #         "MottonenStatePreparation."
+        #     )
 
         a = qml.math.abs(state_vector)
         omega = qml.math.angle(state_vector)
