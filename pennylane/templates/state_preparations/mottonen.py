@@ -195,12 +195,12 @@ def _get_alpha_y(a, n, k):
         for j in range(2 ** (n - k))
     ]
 
-    batch_axis = 1 if len(qml.math.shape(a)) > 1 else -1
-    numerator = qml.math.take(a, indices=indices_numerator, axis=batch_axis)
+    #batch_axis = 1 if len(qml.math.shape(a)) > 1 else -1
+    numerator = qml.math.take(a, indices=indices_numerator, axis=-1)
     numerator = qml.math.sum(qml.math.abs(numerator) ** 2, axis=-1)
 
     indices_denominator = [[j * 2**k + l for l in range(2**k)] for j in range(2 ** (n - k))]
-    denominator = qml.math.take(a, indices=indices_denominator, axis=batch_axis)
+    denominator = qml.math.take(a, indices=indices_denominator, axis=-1)
     denominator = qml.math.sum(qml.math.abs(denominator) ** 2, axis=-1)
 
     # Divide only where denominator is zero, else leave initial value of zero.
